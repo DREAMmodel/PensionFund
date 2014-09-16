@@ -7,7 +7,7 @@ using System.IO;
 
 namespace PensionFund
 {
-  class PensionFund
+  class PensionFundLivsrente : PensionSystem
   {
     const int MAXAGE = 130;
     private string _mortalityRatesFile = @"F:\Demographics.2014_BASERUN.R1.Mortality.csv";
@@ -22,12 +22,10 @@ namespace PensionFund
     private int _nonPersonalHoldings = 0;
     private double _adjustmentFactor;
     private int _minPensionAge = 65;
-
     private double[] _lifeSpan;
 
-    public PensionFund(int initialHoldings = 0)
+    public PensionFundLivsrente(int initialHoldings = 0)
     {
-
       _holdings = initialHoldings;
     }
 
@@ -41,7 +39,7 @@ namespace PensionFund
 
     public void Contribution(int contribution)
     {
-      _holdings += contribution;
+      _holdings += contribution; //opdater samlet pensionsbeholdning
     }
 
     public void YearStart()
@@ -58,7 +56,7 @@ namespace PensionFund
       }
 
       _adjustmentFactor = _holdings / (_holdings + _nonPersonalHoldings); //den faktor hvorved den samlede pensionsbeholdning skal justeres med
-      _adjustmentFactor *= (1 + Program.r); //opjuster også pensionsformue med rente
+//      _adjustmentFactor *= (1 + Program.r); //opjuster også pensionsformue med rente
 
       _holdings = Convert.ToInt32(_holdings * _adjustmentFactor); //ikke-personrelaterbare pensionsbeholdninger overgår til samlet beholdning, på person-niveau sker det ved at overlevende personer får deres beholdning justeret med en faktor ved årsstart
       _nonPersonalHoldings = 0;
@@ -70,7 +68,6 @@ namespace PensionFund
 
       //Implementer: Overførsel af opsparing til evt. ægtefælle
     }
-
 
     private void ReadMortalityRates()
     {
