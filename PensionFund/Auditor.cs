@@ -28,7 +28,7 @@ namespace PensionFund
     /// <summary>
     /// Resterende månedlige rater ved ratepension
     /// </summary>
-    private int _ratesLeft = 0;
+    private int _ratesLeft = -1;
     /// <summary>
     /// Beregnet størrelsen af rate
     /// </summary>

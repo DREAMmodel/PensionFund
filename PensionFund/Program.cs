@@ -21,13 +21,14 @@ namespace PensionFund
     {
       Auditor _revisor = new Auditor(_pensionskasseLr, _pensionskasseR); //Start revisor
 
-      Console.WriteLine("Indbetal 1800 om året til livrente og 1200 til ratepension i 30 fulde år");
+      Console.WriteLine("Indbetal 1800 om året til livrentepension i 30 fulde år");
+      Console.WriteLine("Indbetal 1200 til ratepension i 30 fulde år");
       int[] månedligIndbetalingLr = new int[12];
       int[] månedligIndbetalingR = new int[12];
-      for (int m=0; m < 12; m++)
+      for (int m = 0; m < 12; m++)
       {
-        månedligIndbetalingLr[m] = 1800 / 12;
-        månedligIndbetalingR[m] = 0;// 1200 / 12;
+        månedligIndbetalingLr[m] = 0;// 1800 / 12;
+        månedligIndbetalingR[m] = 1200 / 12;
       }
 
       for (int y = 0; y < 30; y++)
@@ -56,7 +57,7 @@ namespace PensionFund
 
         int age = 65 + i + 1;
         udbetaling = _revisor.Update(age, månedligIndbetalingLr, månedligIndbetalingR); //udbetaling
-        Console.WriteLine("Udbetaling som " + age + "-årig (" + i + ". år): " + udbetaling + " Kr.");
+        Console.WriteLine("Udbetaling som " + age + "-årig (" + (i+2) + ". år): " + udbetaling + " Kr.");
         _pensionskasseLr.YearEnd();
         year++;
       }

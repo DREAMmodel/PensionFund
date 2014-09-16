@@ -9,7 +9,7 @@ namespace PensionFund
 {
   class PensionFundLivsrente : PensionSystem
   {
-    const int MAXAGE = 130;
+    const int MAXAGE = 118;
     private string _mortalityRatesFile = @"F:\Demographics.2014_BASERUN.R1.Mortality.csv";
 
     /// <summary>
@@ -31,8 +31,7 @@ namespace PensionFund
 
     public int Installment(int age, int personalHoldings)
     {
-      int installment = Convert.ToInt32(personalHoldings / _lifeSpan[age - _minPensionAge]); //bestem udbetalingens størrelse
-
+      int installment = Convert.ToInt32(personalHoldings / _lifeSpan[age - _minPensionAge] / 12d); //bestem udbetalingens størrelse
       _holdings -= installment; //pengene tages us af pensionskassensbeholdning
       return installment;
     }
@@ -71,8 +70,7 @@ namespace PensionFund
 
     private void ReadMortalityRates()
     {
-      double[] mortalityrates;
-      mortalityrates = new double[MAXAGE - _minPensionAge];
+      double[] mortalityrates = new double[MAXAGE - _minPensionAge];
 
       try
       {
@@ -84,8 +82,8 @@ namespace PensionFund
             string[] cols = line.Split('\t');
             int age = Convert.ToInt32(cols[1]);
 
-            if (Convert.ToInt32(cols[2]) == Program.year && age >= _minPensionAge) //hent kun dødsrater i det givne år for personer over 60
-              mortalityrates[age-_minPensionAge] += Convert.ToDouble(cols[3]) / 2; //tag simpelt gennemsnit af raten for mænd og kvinder
+            if (Convert.ToInt32(cols[2]) == Program.year && age >= _minPensionAge && age < MAXAGE) //hent kun dødsrater i det givne år for personer over 60
+              mortalityrates[age - _minPensionAge] += Convert.ToDouble(cols[3]) / 2; //tag simpelt gennemsnit af raten for mænd og kvinder
           }
         }
       }
@@ -100,14 +98,15 @@ namespace PensionFund
 
       #region omregn fra dødsrater til restlevetid
       for (int age = _minPensionAge; age < MAXAGE; age++) //for hver mulig alderstrin som pensionist
-      {       
+      {
         double sumProbAlive = 0; //akkumuleret ssh for at være levende ved given alder
         double probAlive = 1; //ssh for at være i live ved alder = a
         for (int a = age; a < MAXAGE; a++) //fra start alder til maxalder
         {
-          double sshDyingAtAge = mortalityrates[a-_minPensionAge];
+          double sshDyingAtAge = mortalityrates[a - _minPensionAge];
+          //renten skal ind i beregningen her....?
           probAlive *= (1 - sshDyingAtAge); //sandsynligheden for at personen lever på det pågældende alderstrin
-          sumProbAlive += probAlive;
+          sumProbAlive += (probAlive * Math.Pow(1 + PensionSystem.InterestRateForecasted(), a));
         }
 
         _lifeSpan[age-_minPensionAge] = sumProbAlive;
