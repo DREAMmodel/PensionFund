@@ -14,12 +14,11 @@ namespace PensionFund
     /// </summary>
     public static double r = 0.01; //hvordan skal denne sættes?
 
-    private static PensionFundLivsrente _pensionskasseLr = new PensionFundLivsrente();
-    private static PensionFundRate _pensionskasseR = new PensionFundRate();
     
     static void Main(string[] args)
     {
-      Auditor _revisor = new Auditor(_pensionskasseLr, _pensionskasseR); //Start revisor
+      PensionSystem pensionSystem = new PensionSystem(); //opret pensionssystem
+      Auditor _revisor = new Auditor(); //Start revisor
 
       Console.WriteLine("Indbetal 1800 om året til livrentepension i 30 fulde år");
       Console.WriteLine("Indbetal 1200 til ratepension i 30 fulde år");
@@ -58,7 +57,7 @@ namespace PensionFund
         int age = 65 + i + 1;
         udbetaling = _revisor.Update(age, månedligIndbetalingLr, månedligIndbetalingR); //udbetaling
         Console.WriteLine("Udbetaling som " + age + "-årig (" + (i+2) + ". år): " + udbetaling + " Kr.");
-        _pensionskasseLr.YearEnd();
+        PensionSystem.PensionfundLivrente.YearEnd();
         year++;
       }
       
@@ -68,14 +67,14 @@ namespace PensionFund
     private static void YearStart(Auditor _revisor)
     {
       _revisor.YearStart(); //Opjuster enkelt personers pensions beholdning
-      _pensionskasseLr.YearStart();
-      _pensionskasseR.YearStart();
+      PensionSystem.PensionfundLivrente.YearStart();
+      PensionSystem.PensionfundRate.YearStart();
     }
 
     private static void YearEnd()
     {
-    _pensionskasseLr.YearEnd(); //afslut år, opgør samlet pensionsformue
-        _pensionskasseR.YearEnd(); //afslut år, opgør samlet pensionsformue
+      PensionSystem.PensionfundLivrente.YearEnd(); //afslut år, opgør samlet pensionsformue
+      PensionSystem.PensionfundRate.YearEnd(); //afslut år, opgør samlet pensionsformue
     }
 
   }

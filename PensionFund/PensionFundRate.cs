@@ -7,7 +7,7 @@ using System.IO;
 
 namespace PensionFund
 {
-  class PensionFundRate : PensionSystem
+  class PensionFundRate
   {
     /// <summary>
     /// Pensionskassens samlede beholdning under optælling
@@ -47,7 +47,7 @@ namespace PensionFund
     {
     }
 
-    public void PersonExit(int holdings)
+    public void PersonExit(int holdings, int m)
     {
 //      _nonPersonalHoldings += holdings; //en person dør og pensionsdepotet overgår til pensionskassen
 

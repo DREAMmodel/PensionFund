@@ -18,6 +18,21 @@ namespace PensionFund
     /// Faktisk rente i simuleringen
     /// </summary>
     private static double _r = Program.r;
+    /// <summary>
+    /// Reference til pensionskasse
+    /// </summary>
+    private static PensionFundLivsrente _pensionfundLivrente;
+    /// <summary>
+    /// Reference til pensionskasse
+    /// </summary>
+    private static PensionFundRate _pensionfundRate;
+
+
+    public PensionSystem()
+    {
+      _pensionfundLivrente = new PensionFundLivsrente();
+      _pensionfundRate = new PensionFundRate();
+    }
 
     /// <summary>
     /// Estimeret rente, dvs. den rente pensionskasserne regner med, opdelt på m årlige terminer
@@ -38,6 +53,15 @@ namespace PensionFund
     {
       return Math.Pow(1 + _r, 1 / m) - 1; //rente ved m årlige terminer
     }
-  
+
+    public static PensionFundLivsrente PensionfundLivrente
+    {
+      get { return _pensionfundLivrente; }
+    }
+
+    public static PensionFundRate PensionfundRate
+    {
+      get { return _pensionfundRate; }
+    }
   }
 }
