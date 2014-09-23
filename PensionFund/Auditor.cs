@@ -9,15 +9,18 @@ namespace PensionFund
   class Auditor
   {
     /// <summary>
-    /// Personens samlede livsrate-pensionsopsparing/formue, primo (Bx)
+    /// Personens samlede livrate-pensionsopsparing/formue, primo (Bx)
     /// </summary>
-    int _holdingsLivrenteBx = 0;
+    int _livrenteDepotPrimoBx = 0;
     Boolean _activeLivrente = false;
     /// <summary>
     /// Personens samlede rate-pensionsopsparing/formue
     /// </summary>
     int _holdingsRate = 0;
-    int _Ax;
+    /// <summary>
+    /// Livrentedepot ultimo måned
+    /// </summary>
+    int _livrenteDepotUltimoAx;
     /// <summary>
     /// Resterende månedlige rater ved ratepension
     /// </summary>
@@ -31,11 +34,12 @@ namespace PensionFund
     /// </summary>
     private int _ratesLeftDeadSpouse = 0;
 
+    private int w;
 
 
     public Auditor(int holdingsLivsrente = 0, int holdingsRate = 0)
     {
-      _holdingsLivrenteBx = holdingsLivsrente;
+      _livrenteDepotPrimoBx = holdingsLivsrente;
       _holdingsRate = holdingsRate;
     }
 
@@ -44,29 +48,41 @@ namespace PensionFund
       int installment = 0; //årets samlede pensionsudbetaling
       for (int m = 0; m < 12; m++)
       {
+        _livrenteDepotPrimoBx = PensionSystem.PensionfundLivrente.UpdateHoldings(age, _livrenteDepotUltimoAx, m); //beregn ny beholdning (Bx)
+        if (m == 0)
+          w = _livrenteDepotPrimoBx;
+        
         if (dead == m) //personen dør denne måned
         {
-          PensionSystem.PensionfundLivrente.PersonExit(_holdingsLivrenteBx, m);
+          PensionSystem.PensionfundLivrente.PersonExit(_livrenteDepotPrimoBx, m);
           PensionSystem.PensionfundRate.PersonExit(_holdingsRate, m);
           return installment;
         }
 
+        #region ratepension
         if (startRate == m && _ratesLeft < 1)
           _ratesLeft = 12 * 10; //aktiver ratepensionsudbetaling sæt udbetaling til at vare 10 år
 
-        _activeLivrente |= startLivrente == m; //aktiver livrentepensionsudbetaling
-
-        _holdingsLivrenteBx = PensionSystem.PensionfundLivrente.UpdateHoldings(_holdingsLivrenteBx, age, _Ax, m); //beregn ny beholdning (Bx)
-
         ContributionRate(contributionRate[m]); //indbetal til ratepension
         installment += InstallmentRate(); //udbetal ratepension
+        #endregion ratepension
 
-        ContributionLivrente(contributionLivsrente[m]); //indbetal til livsrentepension
-        int installmentLivrente = _activeLivrente ? InstallmentLivsrente(age) : 0; //udbetal livsrentepension, hvis aktiv
+        _activeLivrente |= startLivrente == m; //aktiver livrentepensionsudbetaling
+
+        PensionSystem.PensionfundLivrente.Growth(w); //faktisk rente tilskrivning
+        PensionSystem.PensionfundLivrente.Contribution(contributionLivsrente[m]); //orienter pensionsfund om indbetaling
+        int installmentLivrente = _activeLivrente && _livrenteDepotPrimoBx > 0 ? PensionSystem.PensionfundLivrente.Installment(age, _livrenteDepotPrimoBx) : 0; //udbetal livsrentepension, hvis aktiv
+
+        _livrenteDepotUltimoAx = Convert.ToInt32((1 + PensionSystem.InterestRateForecasted(12)) * _livrenteDepotPrimoBx + contributionLivsrente[m] - installmentLivrente);
+
+        w = Convert.ToInt32((1 + PensionSystem.InterestRate(12)) * w + contributionLivsrente[m] - installmentLivrente);
 
         installment += installmentLivrente;
 
-        _Ax = Convert.ToInt32((1 + PensionSystem.InterestRateForecasted(12)) * _holdingsLivrenteBx + contributionLivsrente[m] - installmentLivrente);
+        if (m == 12)
+        {
+          1 / _p[x] * _livrenteDepotUltimoAx; //beregn Dx
+        }
       }
 
       return installment;
@@ -94,17 +110,17 @@ namespace PensionFund
 
     private void ContributionLivrente(int contribution)
     {
-      int growth = Convert.ToInt32(_holdingsLivrenteBx * PensionSystem.InterestRateForecasted(12));
-      _holdingsLivrenteBx += growth + contribution; //opdater personlig formue med rente og indbetaling
-      PensionSystem.PensionfundLivrente.Contribution(growth + contribution); //orienter pensionsfund om indbetaling      
+//      int growth = Convert.ToInt32(_livrenteDepotPrimoBx * PensionSystem.InterestRateForecasted(12));
+      //_livrenteDepotPrimoBx += contribution; //opdater personlig formue med forventet rentetilskrivning og indbetaling
+      PensionSystem.PensionfundLivrente.Contribution(contribution); //orienter pensionsfund om indbetaling      
     }
 
     private int InstallmentLivsrente(int age)
     {
-      if (_holdingsLivrenteBx > 0)
+      if (_livrenteDepotPrimoBx > 0)
       {
-        int installment = PensionSystem.PensionfundLivrente.Installment(age, _holdingsLivrenteBx); //beregn udbetaling v. givet alderstrin
-        _holdingsLivrenteBx -= installment; //fratræk udbetaling fra beholdning
+        int installment = PensionSystem.PensionfundLivrente.Installment(age, _livrenteDepotPrimoBx); //beregn udbetaling v. givet alderstrin
+//        _livrenteDepotPrimoBx -= installment; //fratræk udbetaling fra beholdning
         return installment;
       }
       else
@@ -146,11 +162,11 @@ namespace PensionFund
 
     public void YearStart()
     {
-      if (_holdingsLivrenteBx > 0)
-        _holdingsLivrenteBx = Convert.ToInt32(_holdingsLivrenteBx * PensionSystem.PensionfundLivrente.AdjustmentFactor); //opdater personlig pensionsbeholdning med faktor givet af pensionskassen (tager højde for uvikling i pensionskassens samlede beholdning)
+      if (_livrenteDepotPrimoBx > 0)
+        _livrenteDepotPrimoBx = Convert.ToInt32(_livrenteDepotPrimoBx * PensionSystem.PensionfundLivrente.AdjustmentFactor); //opdater personlig pensionsbeholdning med faktor givet af pensionskassen (tager højde for uvikling i pensionskassens samlede beholdning)
 
       Console.WriteLine("Beholdning (rate): " + _holdingsRate + " kr.");
-      Console.WriteLine("Beholdning (livrente): " + _holdingsLivrenteBx + " kr.");
+      Console.WriteLine("Beholdning (livrente): " + _livrenteDepotPrimoBx + " kr.");
     }
 
   }

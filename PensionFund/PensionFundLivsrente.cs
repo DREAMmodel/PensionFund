@@ -15,7 +15,7 @@ namespace PensionFund
     /// <summary>
     /// Pensionskassens samlede beholdning under optælling
     /// </summary>
-    private int _holdings;
+    private int _holdingsW;
     /// <summary>
     /// Samlet opsparing fra personer, der er døde. Til fordeling blandt øvrige pensionskassemedlemmer
     /// </summary>
@@ -31,17 +31,18 @@ namespace PensionFund
     private double[] _alphaB = new double[_pensionAge * 12]; //defineret for alle mulige aldre frem til pension
     private double[] _alphaI = new double[_pensionAge * 12]; //defineret for alle mulige aldre frem til pension
     private double[] _p = new double[MAXAGE * 12];
+    private double _bonus = 0;
 
     public PensionFundLivsrente(int initialHoldings = 0)
     {
-      _holdings = initialHoldings;
+      _holdingsW = initialHoldings;
     }
 
     public int Installment(int age, int personalHoldings)
     {
 //      int installment = Convert.ToInt32(personalHoldings / _lifeSpan[age - _minPensionAge] / 12d); //bestem udbetalingens størrelse
-      int installment = Convert.ToInt32(_gammaB[(age - _minPensionAge) * 12] * personalHoldings);
-      _holdings -= installment; //pengene tages us af pensionskassensbeholdning
+      int installment = Convert.ToInt32(_gammaB[(age - _minPensionAge) * 12] * personalHoldings); //bestem udbetalingens størrelse
+      _holdingsW -= installment; //pengene tages us af pensionskassensbeholdning
       return installment;
     }
 
@@ -53,7 +54,18 @@ namespace PensionFund
 
     public void Contribution(int contribution)
     {
-      _holdings += contribution; //opdater samlet pensionsbeholdning
+      _holdingsW += contribution; //opdater samlet pensionsbeholdning
+    }
+
+    public void Growth(int bx)
+    {
+      _holdingsW += Convert.ToInt32(bx * PensionSystem.InterestRate(12)); //forøg pensionsdebot med rente for persons personlige beholdning
+    }
+
+    public int CalculateDx(int age, int ax)
+    {
+      1 / _p[age] * ax
+      return dx;
     }
 
     public void YearStart()
@@ -63,15 +75,15 @@ namespace PensionFund
 
     public void YearEnd()
     {
-      if (_holdings + _nonPersonalHoldings == 0)
+      if (_holdingsW + _nonPersonalHoldings == 0)
       {
         _adjustmentFactor = 0;
         return;
       }
 
-      _adjustmentFactor = _holdings / (_holdings + _nonPersonalHoldings); //den faktor hvorved den samlede pensionsbeholdning skal justeres med
+      _adjustmentFactor = _holdingsW / (_holdingsW + _nonPersonalHoldings); //den faktor hvorved den samlede pensionsbeholdning skal justeres med
 
-      _holdings = Convert.ToInt32(_holdings * _adjustmentFactor); //ikke-personrelaterbare pensionsbeholdninger overgår til samlet beholdning, på person-niveau sker det ved at overlevende personer får deres beholdning justeret med en faktor ved årsstart
+      _holdingsW = Convert.ToInt32(_holdingsW * _adjustmentFactor); //ikke-personrelaterbare pensionsbeholdninger overgår til samlet beholdning, på person-niveau sker det ved at overlevende personer får deres beholdning justeret med en faktor ved årsstart
       _nonPersonalHoldings = 0;
     }
 
@@ -180,12 +192,22 @@ namespace PensionFund
       */
     }
 
-    public int UpdateHoldings(int holdings, int age, int ax, int m = 0)
+    private double Bonus()
+    {
+      _bonus = _holdingsW / sumD - 1;
+    }
+
+    private int sumDx()
+    {
+
+    }
+
+    public int UpdateHoldings(int age, int ax, int m = 0)
     {
       if (m == 0)
-        return (1 + bonus) * Dx;
+        return (1 + _bonus) * Dx;
       else
-        return Convert.ToInt32(1 / _p[age * 12 + m] * ax);
+        return Convert.ToInt32(1 / _p[age * 12 + m - 1] * ax);
     }
 
     public double AdjustmentFactor
