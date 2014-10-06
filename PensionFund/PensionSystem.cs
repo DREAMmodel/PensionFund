@@ -49,9 +49,9 @@ namespace PensionFund
     /// </summary>
     /// <param name="m">Antal årlige terminer</param>
     /// <returns></returns>
-    public static double InterestRate(int m = 1)
+    public static double InterestRate(double m = 1)
     {
-      return Math.Pow(1 + _r, 1 / m) - 1; //rente ved m årlige terminer
+      return Math.Pow(1 + _r, 1 / Convert.ToDouble(m)) - 1; //rente ved m årlige terminer
     }
 
     public static PensionFundLivsrente PensionfundLivrente

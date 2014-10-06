@@ -50,7 +50,6 @@ namespace PensionFund
     public void PersonExit(int holdings, int m)
     {
 //      _nonPersonalHoldings += holdings; //en person dør og pensionsdepotet overgår til pensionskassen
-
       //Implementer: Overførsel af opsparing til evt. ægtefælle
     }
 

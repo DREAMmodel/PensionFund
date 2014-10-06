@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace PensionFund
 {
@@ -12,69 +13,53 @@ namespace PensionFund
     /// <summary>
     /// Eksogent givet rente
     /// </summary>
-    public static double r = 0.01; //hvordan skal denne sættes?
+    public static double r = 0.1; //hvordan skal denne sættes?
 
-    
     static void Main(string[] args)
     {
+      Stopwatch sw = new Stopwatch(); //measure performance
+      sw.Start();
+      
       PensionSystem pensionSystem = new PensionSystem(); //opret pensionssystem
-      Auditor _revisor = new Auditor(); //Start revisor
 
-      Console.WriteLine("Indbetal 1800 om året til livrentepension i 30 fulde år");
-      Console.WriteLine("Indbetal 1200 til ratepension i 30 fulde år");
-      int[] månedligIndbetalingLr = new int[12];
-      int[] månedligIndbetalingR = new int[12];
-      for (int m = 0; m < 12; m++)
-      {
-        månedligIndbetalingLr[m] = 0;// 1800 / 12;
-        månedligIndbetalingR[m] = 1200 / 12;
-      }
+      Person[] _persons = new Person[10000000];
+      for (int n = 0; n < _persons.Length; n++)
+        _persons[n] = new Person(30); //Opret 30-årig person
 
-      for (int y = 0; y < 30; y++)
+      int indby = 5; //år der simuleres
+      Console.WriteLine("Indbetal til livrentepension i "+indby+" fulde år");
+      
+      for (int y = 0; y < indby; y++)
       {
         year++; //nyt år
-        YearStart(_revisor);
-        _revisor.Update(65-30+y, månedligIndbetalingR, månedligIndbetalingLr); //indbetaling  
-        YearEnd(); //afslut år
+        PensionSystem.PensionfundLivrente.YearStart();
+        PensionSystem.PensionfundRate.YearStart();
+
+        for (int n = 0; n < _persons.Length; n++)
+          _persons[n].YearStart();
+
+        for (int n = 0; n < _persons.Length; n++)
+          _persons[n].Update(); //ind- og udbetal
+
+        for (int n = 0; n < _persons.Length; n++)
+          _persons[n].YearEnd(); //et år ældre
+
+        PensionSystem.PensionfundLivrente.YearEnd(); //afslut år, opgør samlet pensionsformue
+        PensionSystem.PensionfundRate.YearEnd(); //afslut år, opgør samlet pensionsformue
       }
 
-      //ingen indbetalinger
-      for (int m=0; m < 12; m++)
-      {
-        månedligIndbetalingLr[m] = 0; 
-        månedligIndbetalingR[m] = 0;
-      }
+      Console.WriteLine("\rElapsed= {0:hh\\:mm\\:ss}.", sw.Elapsed);
+      sw.Restart();
       
-      int udbetaling = _revisor.Update(65, månedligIndbetalingLr, månedligIndbetalingR, 0, 0); //start udbetaling af begge pensioner i første måned (=0)
-      YearEnd(); //afslut år
-      Console.WriteLine("Første årlige udbetaling: " + udbetaling + " Kr.");
 
-      for (int i = 0; i < 45; i++)
-      {
-        year++; //nyt år
-        YearStart(_revisor); 
-
-        int age = 65 + i + 1;
-        udbetaling = _revisor.Update(age, månedligIndbetalingLr, månedligIndbetalingR); //udbetaling
-        Console.WriteLine("Udbetaling som " + age + "-årig (" + (i+2) + ". år): " + udbetaling + " Kr.");
-        PensionSystem.PensionfundLivrente.YearEnd();
-        year++;
-      }
-      
+      Console.WriteLine("Press any key to exit...");
       Console.ReadKey();
     }
 
-    private static void YearStart(Auditor _revisor)
-    {
-      _revisor.YearStart(); //Opjuster enkelt personers pensions beholdning
-      PensionSystem.PensionfundLivrente.YearStart();
-      PensionSystem.PensionfundRate.YearStart();
-    }
 
     private static void YearEnd()
     {
-      PensionSystem.PensionfundLivrente.YearEnd(); //afslut år, opgør samlet pensionsformue
-      PensionSystem.PensionfundRate.YearEnd(); //afslut år, opgør samlet pensionsformue
+
     }
 
   }
