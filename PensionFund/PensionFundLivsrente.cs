@@ -25,8 +25,8 @@ namespace PensionFund
     private double[] _alphaB = new double[_pensionAge * 12]; //defineret for alle mulige aldre frem til pension
     private double[] _alphaI = new double[_pensionAge * 12]; //defineret for alle mulige aldre frem til pension
     public double[] _p = new double[MAXAGE * 12]; //TODO: Skal være private!
-    private double _bonus = 0;
-    private double sumDx = 0;
+    private double _bonus = 1;
+    private double _sumDx = 0;
 
     public PensionFundLivsrente(ulong initialHoldings = 0)
     {
@@ -35,9 +35,7 @@ namespace PensionFund
 
     public int CalculateInstallment(int age, int m, int personalHoldings)
     {
-//      int installment = Convert.ToInt32(personalHoldings / _lifeSpan[age - _minPensionAge] / 12d); //bestem udbetalingens størrelse
       int installment = Convert.ToInt32(_gammaB[(age - _minPensionAge) * 12 + m] * personalHoldings); //bestem udbetalingens størrelse
-//      _holdingsW -= installment; //pengene tages us af pensionskassensbeholdning
       return installment;
     }
 
@@ -65,7 +63,7 @@ namespace PensionFund
     public int CalculateDx(int age, int m, int ax)
     {
       int dx = Convert.ToInt32(1 / _p[age * 12 + m] * ax);
-      sumDx += dx;
+      _sumDx += dx;
       return dx;
     }
 
@@ -73,7 +71,7 @@ namespace PensionFund
     {
       ReadMortalityRates();
       CalculateBonus();
-      sumDx = 0;
+      _sumDx = 0;
     }
 
     public void YearEnd()
@@ -86,8 +84,6 @@ namespace PensionFund
       if (m < 11) //ingen yderligere rente, hvis vi allerede er i december
         _holdingsW += Convert.ToUInt32(holdings * Math.Pow((1 + PensionSystem.InterestRate(12)), 11 - m) - holdings); //en person dør og pensionsdepotet overgår til pensionskassen (med renter for resten af året)
 
-      //double tmp = holdings * Math.Pow(1 + PensionSystem.InterestRate(12), 11 - m);
-//      Auditor.sumW += Convert.ToInt32(tmp);
       //Implementer: Overførsel af opsparing til evt. ægtefælle
     }
 
@@ -105,8 +101,9 @@ namespace PensionFund
             string[] cols = line.Split('\t');
             int age = Convert.ToInt32(cols[1]);
 
-            if (Convert.ToInt32(cols[2]) == Program.year && age < MAXAGE) //hent kun dødsrater i det givne år for personer over 60
-              mortalityrates[age] += Convert.ToDouble(cols[3]) / 2; //tag simpelt gennemsnit af raten for mænd og kvinder
+//            if (Convert.ToInt32(cols[2]) == Program.year && age < MAXAGE) //hent kun dødsrater i det givne år for personer over 60
+            if (Convert.ToInt32(cols[2]) == 2010 && age < MAXAGE) //hent kun dødsrater i det givne år for personer over 60
+              mortalityrates[age] = Convert.ToDouble(cols[3]) / 2d; //tag simpelt gennemsnit af raten for mænd og kvinder
           }
         }
       }
@@ -130,14 +127,13 @@ namespace PensionFund
       }
 
       for (int a = 0; a < MAXAGE * 12 - 1; a++)
-        _p[a] = 0.99;// Convert.ToDouble(l[a + 1] / l[a]);
+        _p[a] = Convert.ToDouble(l[a + 1] / l[a]);
 
       double v = 1 / (1 + PensionSystem.InterestRateForecasted(12));
 
       double[] L = new double[MAXAGE * 12];
       for (int a = 0; a < MAXAGE * 12; a++)
-        L[a] = Convert.ToDouble(l[a]) * Math.Pow(v, a);
-
+        L[a] = Convert.ToDouble(l[a] * Convert.ToDecimal(Math.Pow(v, a)));
 
       for (int x = 0; x < _pensionAge * 12; x++)
       {
@@ -151,7 +147,7 @@ namespace PensionFund
       for (int x = 0; x < _pensionAge * 12; x++)
       {
         double sum = 0;
-        for (int y = x; y < _pensionAge * 12 - 1; y++)
+        for (int y = x; y < _pensionAge * 12; y++)
           sum += L[y] / L[x];
 
         _alphaI[x] = v * sum * _alphaB[x];
@@ -160,30 +156,23 @@ namespace PensionFund
       for (int x = _minPensionAge * 12; x < MAXAGE * 12; x++)
       {
         double sum = 0;
-        for (int y = x; y < MAXAGE * 12 - 1; y++)
+        for (int y = x; y < MAXAGE * 12; y++)
           sum += L[y] / L[x];
 
         _gammaB[x - _minPensionAge * 12] = Math.Pow(v * sum, -1);
       }
     }
 
-    double max = 0;
-    double min = 0;
     private void CalculateBonus()
     {
-      _bonus = sumDx == 0 ? 0 : _holdingsW / sumDx - 1;
-      if (_bonus > max)
-        max = _bonus;
-      if (_bonus < min)
-        min = _bonus;
-      Console.WriteLine(_bonus);
-
+      _bonus = _sumDx == 0 ? 1 : _holdingsW / _sumDx;
+      Console.WriteLine("Livrentepension, bonus: " + _bonus);
     }
 
     public int UpdateHoldings(int age, int ax, int dx = 0, int m = 0)
     {
       if (m == 0)
-        return dx == 0 ? ax : Convert.ToInt32((1 + _bonus) * dx);
+        return dx == 0 ? ax : Convert.ToInt32(_bonus * dx);
       else
         return Convert.ToInt32(1 / _p[age * 12 + m - 1] * ax);
     }
