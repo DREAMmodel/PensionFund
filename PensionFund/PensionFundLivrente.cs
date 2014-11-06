@@ -7,7 +7,7 @@ using System.IO;
 
 namespace PensionFund
 {
-  class PensionFundLivsrente
+  class PensionFundLivrente
   {
     const int MAXAGE = 118;
     private string _mortalityRatesFile = @"F:\Demographics.2014_BASERUN.R1.Mortality.csv";
@@ -28,9 +28,14 @@ namespace PensionFund
     private double _bonus = 1;
     private double _sumDx = 0;
 
-    public PensionFundLivsrente(ulong initialHoldings = 0)
+    public PensionFundLivrente(ulong initialHoldings = 0)
     {
       _holdingsW = initialHoldings;
+    }
+
+    public void InitialAccount(int holdings)
+    {
+      _holdingsW += Convert.ToUInt32(holdings);
     }
 
     public int CalculateInstallment(int age, int m, int personalHoldings)
@@ -103,7 +108,7 @@ namespace PensionFund
 
 //            if (Convert.ToInt32(cols[2]) == Program.year && age < MAXAGE) //hent kun dødsrater i det givne år for personer over 60
             if (Convert.ToInt32(cols[2]) == 2010 && age < MAXAGE) //hent kun dødsrater i det givne år for personer over 60
-              mortalityrates[age] = Convert.ToDouble(cols[3]) / 2d; //tag simpelt gennemsnit af raten for mænd og kvinder
+              mortalityrates[age] += Convert.ToDouble(cols[3]) / 2d; //tag simpelt gennemsnit af raten for mænd og kvinder
           }
         }
       }

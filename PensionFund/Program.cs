@@ -13,7 +13,7 @@ namespace PensionFund
     /// <summary>
     /// Eksogent givet rente
     /// </summary>
-    public static double r = 0.00; //hvordan skal denne sættes?
+    public static double r = 0.03; //hvordan skal denne sættes?
 
     static void Main(string[] args)
     {
@@ -22,18 +22,19 @@ namespace PensionFund
       
       PensionSystem pensionSystem = new PensionSystem(); //opret pensionssystem
 
-      Person[] _persons = new Person[1000000];
+      Person[] _persons = new Person[1000];
       for (int n = 0; n < _persons.Length; n++)
-        _persons[n] = new Person(50); //Opret 30-årig person
+        _persons[n] = new Person(60); //Opret 30-årig person
 
-      int indby = 25; //år der simuleres
-      Console.WriteLine("Indbetal til livrentepension i "+indby+" fulde år");
+      int indby = 10; //år der simuleres
+      Console.WriteLine("Simuler "+indby+" fulde år");
       
       for (int y = 0; y < indby; y++)
       {
         year++; //nyt år
         PensionSystem.PensionfundLivrente.YearStart();
         PensionSystem.PensionfundRate.YearStart();
+        PensionSystem.PensionfundInvalide.YearStart();
 
         for (int n = 0; n < _persons.Length; n++)
           _persons[n].YearStart();
@@ -46,6 +47,7 @@ namespace PensionFund
 
         PensionSystem.PensionfundLivrente.YearEnd(); //afslut år, opgør samlet pensionsformue
         PensionSystem.PensionfundRate.YearEnd(); //afslut år, opgør samlet pensionsformue
+        PensionSystem.PensionfundInvalide.YearEnd();
       }
 
       Console.WriteLine("\rElapsed= {0:hh\\:mm\\:ss}.", sw.Elapsed);

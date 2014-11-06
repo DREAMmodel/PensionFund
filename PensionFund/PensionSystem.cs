@@ -21,7 +21,11 @@ namespace PensionFund
     /// <summary>
     /// Reference til pensionskasse
     /// </summary>
-    private static PensionFundLivsrente _pensionfundLivrente;
+    private static PensionFundLivrente _pensionfundLivrente;
+    /// <summary>
+    /// Reference til pensionskasse
+    /// </summary>
+    private static PensionFundInvalide _pensionfundInvalide;
     /// <summary>
     /// Reference til pensionskasse
     /// </summary>
@@ -30,7 +34,8 @@ namespace PensionFund
 
     public PensionSystem()
     {
-      _pensionfundLivrente = new PensionFundLivsrente();
+      _pensionfundInvalide = new PensionFundInvalide();
+      _pensionfundLivrente = new PensionFundLivrente();
       _pensionfundRate = new PensionFundRate();
     }
 
@@ -54,9 +59,14 @@ namespace PensionFund
       return Math.Pow(1 + _r, 1 / Convert.ToDouble(m)) - 1; //rente ved m årlige terminer
     }
 
-    public static PensionFundLivsrente PensionfundLivrente
+    public static PensionFundLivrente PensionfundLivrente
     {
       get { return _pensionfundLivrente; }
+    }
+
+    public static PensionFundInvalide PensionfundInvalide
+    {
+      get { return _pensionfundInvalide; }
     }
 
     public static PensionFundRate PensionfundRate

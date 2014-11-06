@@ -20,6 +20,11 @@ namespace PensionFund
       _holdings = initialHoldings;
     }
 
+    public void InitialAccount(int holdings)
+    {
+      _holdings += holdings;
+    }
+
     public int Installment(int ratesLeft, int personalHoldings)
     {
       int installment;
@@ -45,10 +50,12 @@ namespace PensionFund
 
     public void YearEnd()
     {
+      Console.WriteLine("Beholdning ratepension: " + _holdings + " Kr.");
     }
 
     public void PersonExit(int holdings, int m)
     {
+      _holdings -= holdings;
 //      _nonPersonalHoldings += holdings; //en person dør og pensionsdepotet overgår til pensionskassen
       //Implementer: Overførsel af opsparing til evt. ægtefælle
     }
@@ -57,7 +64,12 @@ namespace PensionFund
     public void InstallmentFactor()
     {
       for (int r = 0; r < _installmentFactor.Length; r++)
-        _installmentFactor[r] = (1 - Math.Pow(1 + PensionSystem.InterestRateForecasted(12), -(r+1))) / PensionSystem.InterestRateForecasted(12); //enhedsannuitet for given restløbetid. Bemærk r+1 fordi 0 betyder at der er en rate tilbage (den der er ved at blive udbetalt)
+      {
+        if (PensionSystem.InterestRateForecasted(12) == 0)
+          _installmentFactor[r] = r; //enhedsannuitet for given restløbetid. Bemærk r+1 fordi 0 betyder at der er en rate tilbage (den der er ved at blive udbetalt)
+        else
+          _installmentFactor[r] = (1 - Math.Pow(1 + PensionSystem.InterestRateForecasted(12), -(r + 1))) / PensionSystem.InterestRateForecasted(12); //enhedsannuitet for given restløbetid. Bemærk r+1 fordi 0 betyder at der er en rate tilbage (den der er ved at blive udbetalt)
+      }
     }
 
   }
