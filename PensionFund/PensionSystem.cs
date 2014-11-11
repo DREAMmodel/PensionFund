@@ -30,6 +30,11 @@ namespace PensionFund
     /// Reference til pensionskasse
     /// </summary>
     private static PensionFundRate _pensionfundRate;
+    public static int _minPensionAge = 65;
+    /// <summary>
+    /// Teknisk pensionsalder....
+    /// </summary>
+    public static int _pensionAge = 65;
 
 
     public PensionSystem()

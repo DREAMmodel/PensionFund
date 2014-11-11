@@ -13,7 +13,7 @@ namespace PensionFund
     /// <summary>
     /// Eksogent givet rente
     /// </summary>
-    public static double r = 0.03; //hvordan skal denne sættes?
+    public static double r = 0.05; //hvordan skal denne sættes?
 
     static void Main(string[] args)
     {
@@ -22,7 +22,7 @@ namespace PensionFund
       
       PensionSystem pensionSystem = new PensionSystem(); //opret pensionssystem
 
-      Person[] _persons = new Person[1000];
+      Person[] _persons = new Person[100000];
       for (int n = 0; n < _persons.Length; n++)
         _persons[n] = new Person(60); //Opret 30-årig person
 

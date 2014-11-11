@@ -47,6 +47,14 @@ namespace PensionFund
           break;
         }
 
+      int invalideres = -1;
+      for (int m = 0; m < 12; m++)
+        if (NextEvent(PensionSystem.PensionfundInvalide._qd[_age * 12 + m], _luck)) //i "produktion" skal dette gøres pga "rigtige" ssh
+        {
+          invalideres = m; //invalideres
+          break;
+        }
+
       if (_age < 65)
       {
         int[] månedligIndbetalingR = new int[12]; //ratepension
@@ -55,7 +63,7 @@ namespace PensionFund
         for (int m = 0; m < 12; m++)
           månedligIndbetalingIp[m] = 10000;
 
-        _auditor.Update(_age, månedligIndbetalingR, månedligIndbetalingLr, månedligIndbetalingIp, -1, -1, -1, -1, dead); //kør pensions-år
+        _auditor.Update(_age, månedligIndbetalingR, månedligIndbetalingLr, månedligIndbetalingIp, -1, -1, -1, invalideres, dead); //kør pensions-år
       }
       else if (_age == 65)
       {
@@ -63,7 +71,7 @@ namespace PensionFund
         int[] månedligIndbetalingR = new int[12];
         int[] månedligIndbetalingLr = new int[12];
         int[] månedligIndbetalingIp = new int[12]; //invalidepension
-        _auditor.Update(_age, månedligIndbetalingR, månedligIndbetalingLr, månedligIndbetalingIp, -1, -1, 0, -1, dead); //start udbetaling af livrente pension i første måned (=0)
+        _auditor.Update(_age, månedligIndbetalingR, månedligIndbetalingLr, månedligIndbetalingIp, -1, -1, 0, invalideres, dead); //start udbetaling af livrente pension i første måned (=0)
       }
       else
       {
@@ -71,7 +79,7 @@ namespace PensionFund
         int[] månedligIndbetalingR = new int[12];
         int[] månedligIndbetalingLr = new int[12];
         int[] månedligIndbetalingIp = new int[12]; //invalidepension
-        _auditor.Update(_age, månedligIndbetalingR, månedligIndbetalingLr, månedligIndbetalingIp, -1, -1, -1, -1, dead); //start udbetaling af livrente pension i første måned (=0)
+        _auditor.Update(_age, månedligIndbetalingR, månedligIndbetalingLr, månedligIndbetalingIp, -1, -1, -1, invalideres, dead); //start udbetaling af livrente pension i første måned (=0)
       }
 
     }

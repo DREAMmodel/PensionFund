@@ -16,29 +16,23 @@ namespace PensionFund
     /// Pensionskassens samlede beholdning under optælling
     /// </summary>
     private ulong _holdingsW;
-    private static int _minPensionAge = 65;
-    /// <summary>
-    /// Teknisk pensionsalder....
-    /// </summary>
-    private static int _pensionAge = 65;
-    private double[] _gammaB = new double[(MAXAGE - _minPensionAge) * 12];
+    private double[] _gammaB = new double[(MAXAGE - PensionSystem._minPensionAge) * 12];
     private double[] _alphaB = new double[MAXAGE * 12]; //defineret for alle mulige aldre frem til pension
     private double[] _alphaI = new double[MAXAGE * 12]; //defineret for alle mulige aldre frem til pension
     /// <summary>
     /// Sandsynlighed for at en person med given alder (målt i måneder) dør inden næste alder
     /// </summary>
     public double[] _p = new double[MAXAGE * 12]; //TODO: Skal være private!
-
     /// <summary>
     /// Sandsynlighed for at en person med given alder (målt i måneder) bliver invalid inden næste alder
     /// </summary>
     public double[] _qd = new double[MAXAGE * 12]; //TODO: Skal være private!
     double[] _beta = new double[MAXAGE * 12];
-    double[] _theta = new double[_minPensionAge * 12];
-    double[] _eta = new double[_minPensionAge * 12];
-    private double[] _gamma = new double[(MAXAGE - _minPensionAge) * 12];
+    double[] _theta = new double[PensionSystem._minPensionAge * 12];
+    double[] _eta = new double[PensionSystem._minPensionAge * 12];
+    private double[] _gamma = new double[(MAXAGE - PensionSystem._minPensionAge) * 12];
 
-    private double _zeta = 0;
+    private double _zeta = 00;
 
     private double _bonus = 1;
     private double _sumDx = 0;
@@ -49,7 +43,7 @@ namespace PensionFund
 
       //initialiser invalide sandsynligheder
       for (int i = 0; i < _qd.Length; i++)
-        _qd[i] = 0.005; //ssh for invaliditet
+        _qd[i] = 0.001; //ssh for invaliditet
     }
 
     public void InitialAccount(int holdings)
@@ -60,7 +54,7 @@ namespace PensionFund
     public int CalculateDdf(int age, int m, int adf, int expected, Boolean first = false)
     {
       if (first) //personen er netop blevet invalid
-        return Convert.ToInt32(_eta[age * 12 + m] * _zeta * expected);
+        return Convert.ToInt32(_theta[age * 12 + m] * _zeta * expected);
       else
         return Convert.ToInt32(1 / _p[age * 12 + m] * adf);
     }
@@ -74,7 +68,7 @@ namespace PensionFund
     public int CalculateDdi(int age, int m, int latestContribution, int adi, Boolean first = false)
     {
       if (first) //personen er netop blevet invalid
-        return Convert.ToInt32(_eta[age * 12 + m] * latestContribution);
+        return Convert.ToInt32(_theta[age * 12 + m] * latestContribution);
       else
         return Convert.ToInt32(1 / _p[age * 12 + m] * adi);
     }
@@ -111,7 +105,7 @@ namespace PensionFund
 
     public int CalculateInstallment(int age, int m, int personalHoldings)
     {
-      int installment = Convert.ToInt32(_gammaB[(age - _minPensionAge) * 12 + m] * personalHoldings); //bestem udbetalingens størrelse
+      int installment = Convert.ToInt32(_gammaB[(age - PensionSystem._minPensionAge) * 12 + m] * personalHoldings); //bestem udbetalingens størrelse
       return installment;
     }
 
@@ -143,7 +137,7 @@ namespace PensionFund
 
     public void Growth(int bx)
     {
-      _holdingsW += Convert.ToUInt32(bx * PensionSystem.InterestRate(12)); //forøg pensionsdebot med rente for persons personlige beholdning
+      _holdingsW = Convert.ToUInt64(_holdingsW + bx * PensionSystem.InterestRate(12)); //forøg pensionsdebot med rente for persons personlige beholdning
     }
 
     public void RegisterDx(int ax)
@@ -165,7 +159,7 @@ namespace PensionFund
 
     public void PersonExit(int age, int m, int holdings)
     {
-      if (age * 12 < _minPensionAge * 12)
+      if (age * 12 < PensionSystem._minPensionAge * 12)
         _holdingsW -= Convert.ToUInt32((1 + PensionSystem.InterestRate(12)) * holdings); //Pensionen udbetales til familie
       else if (m < 11) //ingen yderligere rente, hvis vi allerede er i december
         _holdingsW += Convert.ToUInt32(holdings * Math.Pow((1 + PensionSystem.InterestRate(12)), 11 - m) - holdings); //en person dør og pensionsdepotet overgår til pensionskassen (med renter for resten af året)
@@ -222,82 +216,82 @@ namespace PensionFund
         L[a] = Convert.ToDouble(l[a] * Convert.ToDecimal(Math.Pow(v, a)));
 
 
-      for (int x = _minPensionAge * 12; x < MAXAGE * 12; x++)
+      for (int x = PensionSystem._minPensionAge * 12; x < MAXAGE * 12; x++)
       {
         double sum = 0;
         for (int y = x; y < MAXAGE * 12; y++)
           sum += L[y] / L[x];
 
-        _gammaB[x - _minPensionAge * 12] = Math.Pow(v * sum, -1);
+        _gammaB[x - PensionSystem._minPensionAge * 12] = Math.Pow(v * sum, -1);
       }
 
       #region beregn _beta
-      for (int x = 0; x < _minPensionAge * 12 - 1; x++)
+      for (int x = 0; x < PensionSystem._minPensionAge * 12 - 1; x++)
       {
         double sum = 0;
-        for (int y = x + 1; y <= _minPensionAge * 12 - 1; y++)
+        for (int y = x + 1; y <= PensionSystem._minPensionAge * 12 - 1; y++)
           sum += L[y] / L[x];
 
         _beta[x] = _qd[x] * sum;
       }
-      for (int x = _minPensionAge * 12 - 1; x < MAXAGE * 12; x++)
+      for (int x = PensionSystem._minPensionAge * 12 - 1; x < MAXAGE * 12; x++)
         _beta[x] = 0; //sættes til nul i perioden umiddelbart før pensionsalder og fremefter
       #endregion beregn _beta
 
       #region beregn _alphaB
       double zeta = 0.0;
-      for (int x = 0; x <= _pensionAge * 12 - 2; x++)
+      for (int x = 0; x <= PensionSystem._pensionAge * 12 - 2; x++)
       {
         double sum1 = 0;
-        for (int y = x; y <= _pensionAge * 12 - 2; y++)
+        for (int y = x; y <= PensionSystem._pensionAge * 12 - 2; y++)
           sum1 += Math.Pow(v, y - x + 1) * _beta[y];
 
         double sum2 = 0;
-        for (int y = _pensionAge * 12; y < MAXAGE * 12; y++)
-          sum2 += L[y] / L[_pensionAge * 12];
+        for (int y = PensionSystem._pensionAge * 12; y < MAXAGE * 12; y++)
+          sum2 += L[y] / L[PensionSystem._pensionAge * 12];
 
-        sum2 *= Math.Pow(v, _minPensionAge * 12 - x + 1);
+        sum2 *= Math.Pow(v, PensionSystem._minPensionAge * 12 - x + 1);
 
         _alphaB[x] = Math.Pow(zeta * sum1 + sum2, -1);
       }
 
       {
         double sum = 0;
-        for (int y = _minPensionAge * 12; y < MAXAGE * 12; y++)
-          sum += L[y] / L[_minPensionAge * 12];
+        for (int y = PensionSystem._minPensionAge * 12; y < MAXAGE * 12; y++)
+          sum += L[y] / L[PensionSystem._minPensionAge * 12];
 
-        _alphaB[_minPensionAge * 12 - 1] = Math.Pow(v * v * sum, -1);
+        _alphaB[PensionSystem._minPensionAge * 12 - 1] = Math.Pow(v * v * sum, -1);
       }
 
-      for (int x = _minPensionAge * 12; x < MAXAGE * 12; x++)
+      for (int x = PensionSystem._minPensionAge * 12; x < MAXAGE * 12; x++)
         _alphaB[x] = 1;
       #endregion beregn _alphaB
 
       #region beregn _alphaI
-      for (int x = 0; x <= _pensionAge * 12 - 2; x++)
+      for (int x = 0; x <= PensionSystem._pensionAge * 12 - 2; x++)
       {
         double sum1 = 0;
-        for (int y = x; y <= _pensionAge * 12 - 1; y++)
+        for (int y = x; y <= PensionSystem._pensionAge * 12 - 1; y++)
           sum1 += Math.Pow(v, y - x + 1);
 
         double sum2 = 0;
-        for (int y = x; y <= _pensionAge * 12 - 2; y++)
+        for (int y = x; y <= PensionSystem._pensionAge * 12 - 2; y++)
           sum2 += Math.Pow(v, y - x + 1) * _beta[y];
 
         _alphaI[x] = _alphaB[x] * (sum1 - sum2);
       }
 
-      _alphaI[_minPensionAge * 12 - 1] = _alphaB[_minPensionAge * 12 - 1] * v;
+      _alphaI[PensionSystem._minPensionAge * 12 - 1] = _alphaB[PensionSystem._minPensionAge * 12 - 1] * v;
 
-      for (int x = _minPensionAge * 12; x < MAXAGE * 12; x++)
+      for (int x = PensionSystem._minPensionAge * 12; x < MAXAGE * 12; x++)
         _alphaI[x] = 1;
       #endregion beregn _alphaI
 
       #region beregn _theta og _eta
-      for (int x = 0; x < _minPensionAge * 12; x++)
+      for (int x = 0; x < PensionSystem._minPensionAge * 12; x++)
       {
         double sum = 0;
-        for (int y = x; y < _minPensionAge * 12; y++)
+        for (int y = x; y < PensionSystem._minPensionAge * 12; y++)
           sum += L[y] / L[x];
         _theta[x] = v * sum;
 
@@ -306,13 +300,13 @@ namespace PensionFund
       #endregion beregn _theta og _eta
 
       #region beregn _gamma
-      for (int x = _minPensionAge * 12; x < MAXAGE * 12; x++)
+      for (int x = PensionSystem._minPensionAge * 12; x < MAXAGE * 12; x++)
       {
         double sum = 0;
         for (int y = x; y < MAXAGE * 12; y++)
           sum += L[y] / L[x];
 
-        _gamma[x - _minPensionAge * 12] = Math.Pow(v * sum, -1);
+        _gamma[x - PensionSystem._minPensionAge * 12] = Math.Pow(v * sum, -1);
       }
       #endregion beregn _gamma
     }
