@@ -22,11 +22,11 @@ namespace PensionFund
       
       PensionSystem pensionSystem = new PensionSystem(); //opret pensionssystem
 
-      Person[] _persons = new Person[100000];
+      Person[] _persons = new Person[1000000];
       for (int n = 0; n < _persons.Length; n++)
         _persons[n] = new Person(30); //Opret 30-årig person
 
-      int indby = 10; //år der simuleres
+      int indby = 50; //år der simuleres
       Console.WriteLine("Simuler "+indby+" fulde år");
       
       for (int y = 0; y < indby; y++)

@@ -197,11 +197,7 @@ namespace PensionFund
         Console.WriteLine(e.Message);
         throw new Exception();
       }
-
-      Console.WriteLine("Ændret dødssh...");
-      for (int a = 0; a < PensionSystem._minPensionAge; a++)
-        mortalityrates[a] = 0;
-
+      
       decimal[] l = new decimal[MAXAGE * 12];
       l[0] = 1;
       for (int a = 1; a < MAXAGE * 12; a++)

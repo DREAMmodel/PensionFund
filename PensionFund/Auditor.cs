@@ -83,8 +83,6 @@ namespace PensionFund
     public int Update(int age, int[] contributionRate, int[] contributionLivsrente, int[] contributionInvalide, int startRate = -1, int startLivrente = -1, int startInvalideAldersPension = -1, int invalid = -1, int dead = -1)
     {
       double tmp = 0;
-      if (udvalgt)
-        invalid = 10;
 
       if (udvalgt && age == 65)
         Console.WriteLine("65 år");
@@ -183,11 +181,6 @@ namespace PensionFund
           PensionSystem.PensionfundInvalide.Growth(_wdf); //rentetilskrivning
           PensionSystem.PensionfundInvalide.Installment(fd); //orienter pensionsfund om udbetaling
           _wdf = Convert.ToInt32((1 + PensionSystem.InterestRate(12)) * _wdf - fd);
-
-          if (udvalgt && m == 11)
-            Console.WriteLine("_wdf: " + _wdf);
-          if (udvalgt)
-            Console.WriteLine("Udbetaling, invalid: " + fd);
         }
         #endregion selve invalidepensionen
 
@@ -206,9 +199,6 @@ namespace PensionFund
 //          PensionSystem.PensionfundInvalide.Installment(fdi); //orienter pensionsfund om "udbetaling"
 
           _wdi = Convert.ToInt32((1 + PensionSystem.InterestRate(12)) * _wdi - fdi);
-
-          if (udvalgt && m == 11)
-            Console.WriteLine("_wdi: " + _wdi);
         }
         #endregion opsparingssikring
         
@@ -290,9 +280,6 @@ namespace PensionFund
           PensionSystem.PensionfundInvalide.RegisterDx(_ddf);
           PensionSystem.PensionfundInvalide.RegisterDx(_ddi);
         }
-
-        if (udvalgt && m == 11)
-          Console.WriteLine("_wi: " + wi);
       }
       #endregion simpel livrente med invalidepension
       
