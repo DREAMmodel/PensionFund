@@ -65,7 +65,7 @@ namespace PensionFund
         if (udvalgt && m == 0 && age < 65)
         {
           int expected = PensionSystem.PensionfundLivrente.InstallmentExpected(age, m, _livrenteDepotPrimoBx, contributionLivsrente[m]);
-          Console.WriteLine("Forventet pension: " + expected);
+//          Console.WriteLine("Forventet pension: " + expected);
         }
 
         #region ratepension

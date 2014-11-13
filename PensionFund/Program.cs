@@ -13,7 +13,7 @@ namespace PensionFund
     /// <summary>
     /// Eksogent givet rente
     /// </summary>
-    public static double r = 0.05; //hvordan skal denne sættes?
+    public static double r = 0.0; //hvordan skal denne sættes?
 
     static void Main(string[] args)
     {
@@ -24,7 +24,7 @@ namespace PensionFund
 
       Person[] _persons = new Person[100000];
       for (int n = 0; n < _persons.Length; n++)
-        _persons[n] = new Person(60); //Opret 30-årig person
+        _persons[n] = new Person(30); //Opret 30-årig person
 
       int indby = 10; //år der simuleres
       Console.WriteLine("Simuler "+indby+" fulde år");
@@ -53,6 +53,7 @@ namespace PensionFund
       Console.WriteLine("\rElapsed= {0:hh\\:mm\\:ss}.", sw.Elapsed);
       sw.Restart();
       
+      Console.WriteLine("Invalide: " + Person._invalide );
 
       Console.WriteLine("Press any key to exit...");
       Console.ReadKey();

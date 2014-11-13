@@ -50,7 +50,7 @@ namespace PensionFund
 
     public void YearEnd()
     {
-      Console.WriteLine("Beholdning ratepension: " + _holdings + " Kr.");
+//      Console.WriteLine("Beholdning ratepension: " + _holdings + " Kr.");
     }
 
     public void PersonExit(int holdings, int m)

@@ -14,10 +14,13 @@ namespace PensionFund
     //Auditor _auditor = new Auditor(10000000, 0, 10000000, 999, true, true); //har aktiv invalide- og livrentepension
     //Auditor _auditor = new Auditor(10000000, 0, 0, 999, false, true); //har aktiv livrentepension
     //Auditor _auditor = new Auditor(0, 100000, 0, 999, false, false, 12*10); //har aktiv ratepension, med 10 år tilbage
+
     int _age = 0;
     Boolean _alive = true;
+    public static int _invalide = 0;
+    Boolean _invalid = false;
 
-    public Person(int age) 
+    public Person(int age)
     {
       _age = age;
     }
@@ -48,12 +51,14 @@ namespace PensionFund
         }
 
       int invalideres = -1;
-      for (int m = 0; m < 12; m++)
-        if (NextEvent(PensionSystem.PensionfundInvalide._qd[_age * 12 + m], _luck)) //i "produktion" skal dette gøres pga "rigtige" ssh
-        {
-          invalideres = m; //invalideres
-          break;
-        }
+      if (!_invalid)
+        for (int m = 0; m < 12; m++)
+          if (NextEvent(PensionSystem.PensionfundInvalide._qd[_age * 12 + m], _luck)) //i "produktion" skal dette gøres pga "rigtige" ssh
+          {
+            invalideres = m; //invalideres
+            _invalide++;
+            break;
+          }
 
       if (_age < 65)
       {

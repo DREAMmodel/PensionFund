@@ -81,7 +81,7 @@ namespace PensionFund
 
     public void YearEnd()
     {
-      Console.WriteLine("Beholdning livrentepension: " + _holdingsW + " Kr.");
+//      Console.WriteLine("Beholdning livrentepension: " + _holdingsW + " Kr.");
     }
 
     public void PersonExit(int holdings, int m)
@@ -171,7 +171,7 @@ namespace PensionFund
     private void CalculateBonus()
     {
       _bonus = _sumDx == 0 ? 1 : _holdingsW / _sumDx;
-      Console.WriteLine("Livrentepension, bonus: " + _bonus);
+//      Console.WriteLine("Livrentepension, bonus: " + _bonus);
     }
 
     public int UpdateHoldings(int age, int ax, int dx = 0, int m = 0)

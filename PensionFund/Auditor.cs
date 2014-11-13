@@ -83,6 +83,8 @@ namespace PensionFund
     public int Update(int age, int[] contributionRate, int[] contributionLivsrente, int[] contributionInvalide, int startRate = -1, int startLivrente = -1, int startInvalideAldersPension = -1, int invalid = -1, int dead = -1)
     {
       double tmp = 0;
+      if (udvalgt)
+        invalid = 10;
 
       if (udvalgt && age == 65)
         Console.WriteLine("65 år");
@@ -122,7 +124,7 @@ namespace PensionFund
         if (udvalgt && m == 0 && age < 65)
         {
           int expected = PensionSystem.PensionfundLivrente.InstallmentExpected(age, m, _livrenteDepotPrimoBx, contributionLivsrente[m]);
-          Console.WriteLine("Forventet pension: " + expected);
+//          Console.WriteLine("Forventet pension: " + expected);
         }
 
         _activeLivrente |= startLivrente == m; //aktiver livrentepensionsudbetaling
@@ -138,8 +140,8 @@ namespace PensionFund
         _livrenteDepotUltimoAx = Convert.ToInt32((1 + PensionSystem.InterestRateForecasted(12)) * _livrenteDepotPrimoBx) + contributionLivsrente[m] - installmentLivrente;
 
         installment += installmentLivrente;
-        if (udvalgt && installmentLivrente > 0)
-          Console.WriteLine("Udbetaling livrente, m=" + m + ", " + installmentLivrente + " Kr.");
+//        if (udvalgt && installmentLivrente > 0)
+//          Console.WriteLine("Udbetaling livrente, m=" + m + ", " + installmentLivrente + " Kr.");
 
         if (dead == m) //personen dør denne måned
         {
@@ -162,10 +164,7 @@ namespace PensionFund
           invalid = -1; //kan kun blive invalid een gang
 
         _invalid |= invalid == m; //aktiver invalidepension
-
-        if (_invalid)
-          udvalgt = udvalgt;
-
+        
         if (_invalid && age >= PensionSystem._pensionAge)
         {
           _invalid = false; //når du når pensionsalderen behandles du ikke længere som invalid, men som pensionist
@@ -176,9 +175,7 @@ namespace PensionFund
         {
           _ddf = PensionSystem.PensionfundInvalide.CalculateDdf(age, m, _adf, _expectedPension, invalid == m); //indvalidebeholdning primo før bonus
           _bdf = PensionSystem.PensionfundInvalide.CalculateBdf(m, _ddf); //indvalidebeholdning, justeret m. bonus
-          int fd = PensionSystem.PensionfundInvalide.CalculateFd(age, m, _bdf); //udbetaling
-          if (fd > 0)
-            fd = fd;
+          int fd = Math.Min(99999989, PensionSystem.PensionfundInvalide.CalculateFd(age, m, _bdf)); //udbetaling
           _adf = PensionSystem.PensionfundInvalide.CalculateAdf(_bdf, fd); //indvalidebeholdning ultimo
 
           if (m == 0)
@@ -186,6 +183,11 @@ namespace PensionFund
           PensionSystem.PensionfundInvalide.Growth(_wdf); //rentetilskrivning
           PensionSystem.PensionfundInvalide.Installment(fd); //orienter pensionsfund om udbetaling
           _wdf = Convert.ToInt32((1 + PensionSystem.InterestRate(12)) * _wdf - fd);
+
+          if (udvalgt && m == 11)
+            Console.WriteLine("_wdf: " + _wdf);
+          if (udvalgt)
+            Console.WriteLine("Udbetaling, invalid: " + fd);
         }
         #endregion selve invalidepensionen
 
@@ -197,20 +199,16 @@ namespace PensionFund
           _bdi = PensionSystem.PensionfundInvalide.CalculateBdi(m, _ddi); //indvalidebeholdning, justeret m. bonus
           fdi = PensionSystem.PensionfundInvalide.CalculateFdi(age, m, _bdi); //"udbetaling"
           _adi = PensionSystem.PensionfundInvalide.CalculateAdi(_bdi, fdi); //indvalidebeholdning ultimo
-          if (_adi > 0)
-            _adi = _adi;
 
           if (m == 0)
             _wdi = _bdi;
           PensionSystem.PensionfundInvalide.Growth(_wdi); //rentetilskrivning
 //          PensionSystem.PensionfundInvalide.Installment(fdi); //orienter pensionsfund om "udbetaling"
-          if (_wdi < fdi)
-            _wdi = _wdi;
 
           _wdi = Convert.ToInt32((1 + PensionSystem.InterestRate(12)) * _wdi - fdi);
-          if (_wdi < 0)
-            _wdi = _wdi;
 
+          if (udvalgt && m == 11)
+            Console.WriteLine("_wdi: " + _wdi);
         }
         #endregion opsparingssikring
         
@@ -224,10 +222,10 @@ namespace PensionFund
             expected = PensionSystem.PensionfundInvalide.InstallmentExpected(age, m, _invalideDepotPrimoBx, fdi);
           else
             expected = PensionSystem.PensionfundInvalide.InstallmentExpected(age, m, _invalideDepotPrimoBx, contributionInvalide[m]);
-        if (udvalgt && age < 65)
+        if (udvalgt && m == 0 && age < 65)
         {
           Console.WriteLine("Forventet invalide pension: " + expected + " (" + m + ")");
-          Console.WriteLine("Invalide alderspension, beholdning primo (Bx): " + _invalideDepotPrimoBx + " (" + m + ")");
+//          Console.WriteLine("Invalide alderspension, beholdning primo (Bx): " + _invalideDepotPrimoBx + " (" + m + ")");
         }
 
         if (m == 0)
@@ -290,10 +288,11 @@ namespace PensionFund
         {
           PensionSystem.PensionfundInvalide.RegisterDx(_dxInvalide);
           PensionSystem.PensionfundInvalide.RegisterDx(_ddf);
-          if (_ddf > 0 || _ddi > 0)
-            _ddf = _ddf;
           PensionSystem.PensionfundInvalide.RegisterDx(_ddi);
         }
+
+        if (udvalgt && m == 11)
+          Console.WriteLine("_wi: " + wi);
       }
       #endregion simpel livrente med invalidepension
       

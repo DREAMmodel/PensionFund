@@ -32,7 +32,7 @@ namespace PensionFund
     double[] _eta = new double[PensionSystem._minPensionAge * 12];
     private double[] _gamma = new double[(MAXAGE - PensionSystem._minPensionAge) * 12];
 
-    private double _zeta = 00;
+    private double _zeta = 0.9;
 
     private double _bonus = 1;
     private double _sumDx = 0;
@@ -43,7 +43,7 @@ namespace PensionFund
 
       //initialiser invalide sandsynligheder
       for (int i = 0; i < _qd.Length; i++)
-        _qd[i] = 0.001; //ssh for invaliditet
+        _qd[i] = 0.0002; //ssh for invaliditet
     }
 
     public void InitialAccount(int holdings)
@@ -75,12 +75,12 @@ namespace PensionFund
 
     public int CalculateBdi(int m, int ddi)
     {
-      return m == 0 ? ddi : Convert.ToInt32(_bonus * ddi);
+      return m == 0 ? Convert.ToInt32(_bonus * ddi) : ddi;
     }
 
     public int CalculateBdf(int m, int ddf)
     {
-      return m == 0 ? ddf : Convert.ToInt32(_bonus * ddf);
+      return m == 0 ? Convert.ToInt32(_bonus * ddf) : ddf;
     }
 
     public int CalculateAdf(int bdf, int expected)
@@ -111,6 +111,8 @@ namespace PensionFund
 
     public void Installment(int installment)
     {
+//      if (installment > 0)
+//        Console.WriteLine("Udbetaling: " + installment);
       _holdingsW -= Convert.ToUInt32(installment); //pengene tages us af pensionskassensbeholdning
     }
 
@@ -154,6 +156,8 @@ namespace PensionFund
 
     public void YearEnd()
     {
+      Console.WriteLine("Invalide: " + Person._invalide);
+      Person._invalide = 0;
       Console.WriteLine("Samlet beholdning invalidepension: " + _holdingsW + " Kr.");
     }
 
@@ -193,6 +197,10 @@ namespace PensionFund
         Console.WriteLine(e.Message);
         throw new Exception();
       }
+
+      Console.WriteLine("Ændret dødssh...");
+      for (int a = 0; a < PensionSystem._minPensionAge; a++)
+        mortalityrates[a] = 0;
 
       decimal[] l = new decimal[MAXAGE * 12];
       l[0] = 1;
@@ -239,7 +247,6 @@ namespace PensionFund
       #endregion beregn _beta
 
       #region beregn _alphaB
-      double zeta = 0.0;
       for (int x = 0; x <= PensionSystem._pensionAge * 12 - 2; x++)
       {
         double sum1 = 0;
@@ -252,7 +259,7 @@ namespace PensionFund
 
         sum2 *= Math.Pow(v, PensionSystem._minPensionAge * 12 - x + 1);
 
-        _alphaB[x] = Math.Pow(zeta * sum1 + sum2, -1);
+        _alphaB[x] = Math.Pow(_zeta * sum1 + sum2, -1);
       }
 
       {
